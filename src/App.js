@@ -1,25 +1,54 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useMemo, useState } from "react";
+import axios from "axios";
+import Listagem from "./listagem";
+import CriarProduto from "./criarProduto";
+import EditarProduto from "./editarProduto";
 
-function App() {
+const App = () => {
+
+  const [produtos, setProdutos] = useState(null);
+  const [adicionar, setAdicionar ] = useState(false);
+  const [editar, setEditar] = useState(false);
+  const [info, setInfo] = useState(null);
+
+  const buscarProdutos = async () => {
+    try {
+      const produtos = await axios.get("http://localhost:3033/produto");
+      setProdutos(produtos.data)
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const excluirProduto = async(id) => {
+    try {
+      await axios.delete(`http://localhost:3033/produto/${id}`);
+      buscarProdutos();
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  useMemo(() => {
+      buscarProdutos();
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      {!adicionar && !editar && (
+        <Listagem produtos= {produtos} setAdicionar={setAdicionar} setEditar={setEditar} setInfo={setInfo} excluirProduto={excluirProduto}/>
+      )}
+      {adicionar && (
+        <CriarProduto 
+            setAdicionar={setAdicionar} 
+            buscarProdutos={buscarProdutos} 
+        />
+      )}
+      {
+        editar && <EditarProduto  setEditar={setEditar} buscarProdutos={ buscarProdutos } info={info} />
+      }
+    </>
   );
-}
+};
 
-export default App;
+export default App
